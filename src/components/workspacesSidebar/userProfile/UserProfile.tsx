@@ -1,4 +1,4 @@
-import Images from "../../assets/images";
+import Images from "../../../assets/images";
 import "./UserProfile.scss";
 
 export const UserProfile = () => {
