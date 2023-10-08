@@ -6,9 +6,8 @@
   box-sizing: border-box;
   appearance: none;
   outline: none;
-  min-width: 350px;
-  margin: 10px;
-  min-height: 200px;
+  min-width: 294px;
+  margin: 0px 10px;
   transition: background-color 350ms ease;
   background-color: #ecf1fd;
   border: 1px solid rgba(0, 0, 0, 0.05);
@@ -17,10 +16,10 @@
 
   ul {
     display: grid;
-    grid-gap: 10px;
+    grid-gap: 8px;
     grid-template-columns: repeat(var(--columns, 1), 1fr);
     list-style: none;
-    padding: 20px;
+    padding: 16px 8px 6px 8px;
     margin: 0;
   }
 

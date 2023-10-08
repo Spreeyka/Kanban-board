@@ -39,6 +39,7 @@ import { Item, Container, ContainerProps } from "./components";
 
 import { createRange } from "./utilities";
 import { Plus } from "../../assets/icons/Plus";
+import { AddListButton } from "./components/AddListButton";
 
 export default {
   title: "Presets/Sortable/Multiple Containers",
@@ -417,8 +418,9 @@ export function MultipleContainers({
         style={{
           display: "inline-grid",
           boxSizing: "border-box",
-          padding: 20,
+          padding: "0px 14px",
           gridAutoFlow: vertical ? "row" : "column",
+          alignItems: "start",
         }}
       >
         <SortableContext
@@ -454,6 +456,9 @@ export function MultipleContainers({
                     />
                   );
                 })}
+                <AddListButton>
+                  <Plus fill="#88819F" /> Add a card
+                </AddListButton>
               </SortableContext>
             </DroppableContainer>
           ))}
@@ -465,7 +470,9 @@ export function MultipleContainers({
               onClick={handleAddColumn}
               placeholder
             >
-              <Plus fill="#88819F" /> Add another list
+              <AddListButton>
+                <Plus fill="#88819F" /> Add another list
+              </AddListButton>
             </DroppableContainer>
           )}
         </SortableContext>

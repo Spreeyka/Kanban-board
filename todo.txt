@@ -1,27 +1,23 @@
-Display multiple workspaces with names and task groups.
-
-Create, update, and delete workspaces.
+DONE:
 
 Reorder workspaces via drag-and-drop.
-
-Create, update, and delete task groups within workspaces.
-
 Reorder task groups within a workspace via drag-and-drop.
-
-Create, update, and delete individual tasks within task groups.
-
 Move tasks between groups in the same workspace via drag-and-drop.
 
-Add subtasks to tasks, including creating, updating, and deleting them, with checkboxes for completion.
 
+TODO:
+
+Create, update, and delete task groups within workspaces.
+Create, update, and delete individual tasks within task groups.
+Add subtasks to tasks, including creating, updating, and deleting them, with checkboxes for completion (bo to małe taski).
 Display a task completion counter within each group.
+
+Display multiple workspaces with names and task groups.
+Create, update, and delete workspaces.
 
 
 Bonus
 
 State preservation: retain data and state on page refresh.
-
-Workspace flexibility: allow moving tasks or groups between workspaces.
-To na drag można
-
+Workspace flexibility: allow moving tasks or groups between workspaces. (To na drag można)
 Deployment: deploy the project on a server.
