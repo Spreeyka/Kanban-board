@@ -437,7 +437,7 @@ export function MultipleContainers({
               scrollable={scrollable}
               style={containerStyle}
               unstyled={minimal}
-              onRemove={() => handleRemove(containerId)}
+              onRemove={(e) => handleRemove(e, containerId)}
             >
               <SortableContext items={items[containerId]} strategy={strategy}>
                 {items[containerId].map((value, index) => {
@@ -547,7 +547,10 @@ export function MultipleContainers({
     );
   }
 
-  function handleRemove(containerID: UniqueIdentifier) {
+  function handleRemove(e, containerID: UniqueIdentifier) {
+    console.log("e", e);
+    e.stopPropagation();
+    console.log("kliknięto remove");
     setContainers((containers) => containers.filter((id) => id !== containerID));
   }
 

@@ -2,6 +2,7 @@
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 12px;
   border-radius: 8px;
   background: #f4f7fe;
@@ -15,4 +16,22 @@
   line-height: 18px;
   color: #001c39;
   padding: 16px;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 13px;
+}
+
+.customInput {
+  flex: 1;
+  font-family: "Inter";
+  padding: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 0;
+  background-color: transparent;
+  border: 0;
+  resize: none;
+  flex: 1;
 }

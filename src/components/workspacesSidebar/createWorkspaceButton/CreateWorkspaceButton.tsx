@@ -1,10 +1,13 @@
-import { ReactNode } from "react";
+import { Plus } from "../../../assets/icons/Plus";
 import styles from "./styles.module.scss";
 
-const CreateWorkspaceButton = ({ children }: { children: ReactNode }) => {
+const CreateWorkspaceButton = ({ onClickHandler }: { onClickHandler: () => void }) => {
   return (
     <>
-      <button className={styles.button}>{children}</button>
+      <button className={styles.button} onClick={onClickHandler}>
+        <Plus />
+        Create workspace
+      </button>
     </>
   );
 };

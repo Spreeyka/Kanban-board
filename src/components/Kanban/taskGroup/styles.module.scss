@@ -1,0 +1,32 @@
+@import "src/variables.scss";
+
+.gridItem {
+  display: flex;
+  flex-direction: column;
+  grid-auto-rows: max-content;
+  overflow: hidden;
+  box-sizing: border-box;
+  appearance: none;
+  outline: none;
+  min-width: 294px;
+  margin: 0px 10px;
+  transition: background-color 350ms ease;
+  padding: 16px;
+  background-color: #ecf1fd;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  font-size: 1em;
+  border-radius: 16px;
+
+  &:focus-visible {
+    outline: 2px solid $focused-outline-color;
+  }
+}
+
+ul {
+  display: grid;
+  grid-gap: 8px;
+  grid-template-columns: repeat(var(--columns, 1), 1fr);
+  list-style: none;
+  padding: 16px 8px 6px 8px;
+  margin: 0;
+}

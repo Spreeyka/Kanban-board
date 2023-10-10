@@ -7,18 +7,18 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  &-header {
+  .workspacesHeader {
     padding: 8px;
     display: flex;
     flex-direction: column;
     gap: 8px;
   }
-  &-main {
+  .workspacesMain {
     padding: 24px 32px;
     flex-grow: 1;
     margin-top: 0px;
   }
-  &-footer {
+  .workspacesFooter {
     display: flex;
     align-items: center;
     justify-content: space-between;

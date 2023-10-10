@@ -1,0 +1,7 @@
+.grid {
+  display: inline-grid;
+  box-sizing: border-box;
+  padding: 0px 14px;
+  grid-auto-flow: column;
+  align-items: start;
+}

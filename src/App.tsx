@@ -1,14 +1,14 @@
 import "./App.scss";
 import { TrashableItems } from "./components/KanbanBoard/TrashableItems";
+import { Kanban, KanbanCustom } from "./components/Kanban/Kanban";
 import { WorkspacesSidebar } from "./components/workspacesSidebar";
-
-// dodanie d&d kit
 
 export const App = () => {
   return (
     <div className="container">
       <WorkspacesSidebar />
-      <TrashableItems confirmDrop={false} />
+      <Kanban></Kanban>
+      {/* <TrashableItems confirmDrop={false} /> */}
     </div>
   );
 };
