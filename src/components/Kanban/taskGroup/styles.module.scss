@@ -1,6 +1,6 @@
 @import "src/variables.scss";
 
-.gridItem {
+.taskGroupWrapper {
   display: flex;
   flex-direction: column;
   grid-auto-rows: max-content;
@@ -11,7 +11,7 @@
   min-width: 294px;
   margin: 0px 10px;
   transition: background-color 350ms ease;
-  padding: 16px;
+  padding: 16px 8px;
   background-color: #ecf1fd;
   border: 1px solid rgba(0, 0, 0, 0.05);
   font-size: 1em;
@@ -22,11 +22,59 @@
   }
 }
 
-ul {
-  display: grid;
-  grid-gap: 8px;
-  grid-template-columns: repeat(var(--columns, 1), 1fr);
+.taskGroupName {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  margin: 0;
+  padding: 6px 8px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.addListButtonWrapper {
+  margin-top: 8px;
+  justify-content: center;
+  display: flex;
+  margin-left: -10px;
+}
+
+.taskList {
+  margin: 16px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   list-style: none;
   padding: 16px 8px 6px 8px;
-  margin: 0;
+  padding: 0;
+}
+
+.customInput {
+  flex: 1;
+  font-family: "Inter";
+  padding: 6px 8px;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  border: 0;
+  background-color: transparent;
+  border: 0;
+  flex: 1;
+  outline: 2px solid $focused-outline-color; /* Use your preferred color */
+  border-radius: 6px;
+
+  &:focus-visible {
+    outline: 2px solid $focused-outline-color; /* Use the same custom color */
+  }
+}
+
+.taskDoneDescription {
+  margin: 6px 0 0 0;
+  padding: 0;
+  align-self: flex-end;
+  margin-right: 6px;
+  font-weight: 600;
+  line-height: 18px;
+  font-size: 13px;
 }

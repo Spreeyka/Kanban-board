@@ -1,60 +1,77 @@
 import { IconButton } from "@mui/material";
 import { Dispatch, useRef, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { DeleteIcon } from "../../../assets/icons/Delete";
 import { EditIcon } from "../../../assets/icons/Edit";
 import { TickIcon } from "../../../assets/icons/Tick";
 import { WorkspaceIcon } from "../../../assets/icons/Workspace";
-import useHover from "../../../hooks/useHovered";
-import { deleteWorkspace, editWorkspace } from "../../../store/slices";
+import { deleteWorkspace, editWorkspace, selectWorkspaces } from "../../../store/slices";
 import styles from "./styles.module.scss";
 
 interface WorkspaceButtonProps {
   workspaceName: string;
-  index: string;
+  workspaceId: string;
   setWorkspacePlaceholder: Dispatch<React.SetStateAction<boolean>>;
+  setActiveWorkspace: Dispatch<React.SetStateAction<string>>;
+  activeWorkspace: string;
 }
 
-const WorkspaceButton: React.FC<WorkspaceButtonProps> = ({ workspaceName, index, setWorkspacePlaceholder }) => {
-  const { hovered, handleMouseIn, handleMouseOut } = useHover();
+const WorkspaceButton: React.FC<WorkspaceButtonProps> = ({
+  workspaceName,
+  workspaceId,
+  setWorkspacePlaceholder,
+  setActiveWorkspace,
+  activeWorkspace,
+}) => {
   const [text, setText] = useState(workspaceName);
-
+  const [isEditing, setIsEditing] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const [isEditing, setIsEditing] = useState(false);
-
   const dispatch = useDispatch();
+  const workspaces = useSelector(selectWorkspaces);
 
-  const handleEditClick = () => {
+  const handleEditClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
     setIsEditing(true);
-
     setTimeout(() => {
       if (inputRef.current) inputRef.current.focus();
     }, 0);
   };
 
-  const handleSaveClick = () => {
-    dispatch(editWorkspace({ workspaceIndex: index, newName: text }));
+  const handleSaveClick = (e: React.MouseEvent<HTMLDivElement> | React.FocusEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    dispatch(editWorkspace({ workspaceId: workspaceId, newName: text }));
     setIsEditing(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    const firstWorkspace = Object.keys(workspaces).find((workspace) => workspaceId != workspace);
+    if (!firstWorkspace) return;
     setIsEditing(false);
     setWorkspacePlaceholder(false);
-    dispatch(deleteWorkspace(index));
+    dispatch(deleteWorkspace(workspaceId));
+    setActiveWorkspace(firstWorkspace);
   };
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>): void => {
-    setText(event.target.value);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    e.stopPropagation();
+    setText(e.target.value);
   };
-
-  // TODO:
-  // naprawić działanie dodawania workspace
-  // Usuwanie workspace
 
   return (
     <>
-      <button className={styles.button} onMouseOver={handleMouseIn} onMouseOut={handleMouseOut}>
+      <button
+        className={styles.button}
+        style={{ backgroundColor: activeWorkspace === workspaceId ? "#f4f7fe" : "transparent" }}
+        onClick={() => setActiveWorkspace(workspaceId)}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         <div style={{ display: "flex" }}>
           <WorkspaceIcon />
         </div>
@@ -76,6 +93,7 @@ const WorkspaceButton: React.FC<WorkspaceButtonProps> = ({ workspaceName, index,
               size="large"
               component="div"
               sx={{
+                marginLeft: "4px",
                 padding: 0,
                 "&:hover": {
                   backgroundColor: "transparent",
@@ -89,12 +107,7 @@ const WorkspaceButton: React.FC<WorkspaceButtonProps> = ({ workspaceName, index,
           <div style={{ display: "flex", padding: "4px", flex: 1 }}>{workspaceName}</div>
         )}
 
-        <div
-          className={styles.buttonGroup}
-          style={{ display: hovered && !isEditing ? "flex" : "none" }}
-          // onFocus={() => setIsFocused(true)} // Handle focus event
-          // onBlur={() => setIsFocused(false)}
-        >
+        <div className={styles.buttonGroup} style={{ opacity: (isFocused || isHovered) && !isEditing ? "1" : "0" }}>
           <IconButton aria-label="edit" sx={{ padding: 0 }} component="div" onClick={handleEditClick}>
             <EditIcon />
           </IconButton>

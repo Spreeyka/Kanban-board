@@ -1,6 +1,6 @@
 import styles from "./styles.module.scss";
 
-import React, { useState } from "react";
+import React, { Dispatch, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addWorkspace, selectWorkspaces } from "../../store/slices";
 import { Workspace } from "../../store/slices/types";
@@ -12,7 +12,13 @@ import { UserProfile } from "./userProfile";
 import { WorkspaceButton } from "./workspaceButton";
 import { WorkspaceSettings } from "./workspaceSettings";
 
-export const WorkspacesSidebar = () => {
+export const WorkspacesSidebar = ({
+  setActiveWorkspace,
+  activeWorkspace,
+}: {
+  setActiveWorkspace: Dispatch<React.SetStateAction<string>>;
+  activeWorkspace: string;
+}) => {
   const [workspacePlaceholder, setWorkspacePlaceholder] = useState(false);
 
   const dispatch = useDispatch();
@@ -30,20 +36,18 @@ export const WorkspacesSidebar = () => {
 
   const workspaces = useSelector(selectWorkspaces);
 
-  // Usuwanie workspace
-  // Nie tylko hover powinien pokazywać buttony, ale też focus
-
   return (
     <div className={styles.workspaces}>
       <div className={styles.workspacesHeader}>
-        {workspaces.map((workspace: Workspace, index: string) => (
-          <React.Fragment key={workspace.name}>
-            <WorkspaceButton
-              workspaceName={workspace.name}
-              index={index}
-              setWorkspacePlaceholder={setWorkspacePlaceholder}
-            ></WorkspaceButton>
-          </React.Fragment>
+        {Object.values(workspaces).map((workspace: Workspace) => (
+          <WorkspaceButton
+            key={workspace.name}
+            workspaceName={workspace.name}
+            workspaceId={workspace.id}
+            setWorkspacePlaceholder={setWorkspacePlaceholder}
+            activeWorkspace={activeWorkspace}
+            setActiveWorkspace={setActiveWorkspace}
+          ></WorkspaceButton>
         ))}
         {workspacePlaceholder ? (
           <SaveWorkspaceButton onClickHandler={hidePlaceholder} />

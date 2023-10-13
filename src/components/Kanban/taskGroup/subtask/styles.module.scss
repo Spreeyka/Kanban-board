@@ -36,8 +36,8 @@ li {
   font-family: "Inter";
   padding: 4px;
   font-size: 13px;
-  line-height: 18px;
   font-weight: 600;
+  line-height: 18px;
   border: 0;
   background-color: transparent;
   border: 0;
@@ -47,16 +47,6 @@ li {
 
 .buttonGroup {
   display: flex;
-}
-
-.subtaskList {
-  padding: 0;
-  gap: 0;
-  flex-direction: column;
-  display: flex;
-  width: 96%;
-  align-self: end;
-  list-style-type: none;
 }
 
 .namePlaceholder {

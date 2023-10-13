@@ -7,8 +7,6 @@ import { Handle, Remove } from "./components";
 
 import styles from "./Item.module.scss";
 
-//ogarnąć style
-
 export interface Props {
   dragOverlay?: boolean;
   color?: string;

@@ -1,35 +1,39 @@
 import { useRef, useState } from "react";
+
+import IconButton from "@mui/material/IconButton";
 import { DeleteIcon } from "../../../../assets/icons/Delete";
 import { EditIcon } from "../../../../assets/icons/Edit";
-import {
-  editTaskName,
-  deleteTask,
-  selectSubtasksForTask,
-  toggleTaskState,
-  selectTaskState,
-} from "../../../../store/slices";
-import { Task as TaskType } from "../../../../store/slices/types";
+import { TickIcon } from "../../../../assets/icons/Tick";
+import { deleteSubtask, editSubtaskName, selectSubtaskState, toggleSubtaskState } from "../../../../store/slices";
+import { Subtask as SubtaskType } from "../../../../store/slices/types";
 import styles from "./styles.module.scss";
-import IconButton from "@mui/material/IconButton";
 
 import { useDispatch, useSelector } from "react-redux";
-import { TickIcon } from "../../../../assets/icons/Tick";
-import { Subtask } from "../subtask/subtask";
 import { CustomToggleButton } from "../components/toggleButton";
 
-const Task = ({ task, workspaceId, taskGroupId }: { task: TaskType; workspaceId: string; taskGroupId: string }) => {
+const Subtask = ({
+  subtask,
+  workspaceId,
+  taskGroupId,
+  taskId,
+}: {
+  subtask: SubtaskType;
+  workspaceId: string;
+  taskGroupId: string;
+  taskId: string;
+}) => {
   const dispatch = useDispatch();
-  const taskId = task.id;
-  const [text, setText] = useState(task.name);
+  const subtaskId = subtask.id;
+  const [text, setText] = useState(subtask.name);
   const [isEditing, setIsEditing] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const isTaskDone = useSelector(selectTaskState(workspaceId, taskGroupId, taskId));
+  const isSubtaskDone = useSelector(selectSubtaskState(workspaceId, taskGroupId, taskId, subtaskId));
 
   const handleRemoveTask = () => {
-    dispatch(deleteTask({ workspaceId, taskGroupId, taskId }));
+    dispatch(deleteSubtask({ workspaceId, taskGroupId, taskId, subtaskId }));
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -39,8 +43,15 @@ const Task = ({ task, workspaceId, taskGroupId }: { task: TaskType; workspaceId:
 
   const handleSaveClick = (e: React.MouseEvent<HTMLDivElement> | React.FocusEvent<HTMLDivElement>) => {
     e.stopPropagation();
-    console.log("text", text);
-    dispatch(editTaskName({ workspaceId, taskGroupId, taskId, newTaskName: text }));
+    dispatch(
+      editSubtaskName({
+        workspaceId,
+        taskGroupId,
+        taskId,
+        subtaskId,
+        newName: text,
+      })
+    );
     setIsEditing(false);
   };
 
@@ -52,35 +63,31 @@ const Task = ({ task, workspaceId, taskGroupId }: { task: TaskType; workspaceId:
     }, 0);
   };
 
-  const subtasks = useSelector(selectSubtasksForTask(workspaceId, taskGroupId, taskId));
-
   return (
-    <li style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-      <div
-        className={styles.gridItemHeader}
-        tabIndex={0}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
+    <li
+      tabIndex={0}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div className={styles.gridItemHeader}>
         {isEditing ? (
-          <div style={{ display: "flex", gap: "6px", flex: "1" }}>
+          <div style={{ display: "flex", gap: "6px", flex: 1 }}>
             <input
               value={text}
-              //trick to make input grow
               style={{ width: `${text.length}ch` }}
               onChange={handleChange}
               onBlur={handleSaveClick}
               className={styles.customInput}
-              maxLength={38}
+              maxLength={22}
               spellCheck="false"
               ref={inputRef}
             />
           </div>
         ) : (
           <>
-            <p className={styles.namePlaceholder}>{task.name}</p>
+            <p className={styles.namePlaceholder}>{subtask.name}</p>
           </>
         )}
 
@@ -91,11 +98,10 @@ const Task = ({ task, workspaceId, taskGroupId }: { task: TaskType; workspaceId:
             size="large"
             component="div"
             sx={{
-              border: 0,
+              marginLeft: "4px",
               padding: "6px",
-              borderRadius: 0,
               "&:hover": {
-                backgroundColor: "lightgreen",
+                backgroundColor: "transparent",
               },
             }}
           >
@@ -122,34 +128,21 @@ const Task = ({ task, workspaceId, taskGroupId }: { task: TaskType; workspaceId:
         )}
         {!isEditing && (
           <CustomToggleButton
-            style={{ marginLeft: -6 }}
-            selected={isTaskDone}
+            selected={isSubtaskDone}
             onChange={() => {
               dispatch(
-                toggleTaskState({
+                toggleSubtaskState({
                   workspaceId,
                   taskGroupId,
                   taskId,
+                  subtaskId,
                 })
               );
             }}
           />
         )}
       </div>
-      {Object.values(subtasks).length > 0 && (
-        <ul className={styles.subtaskList}>
-          {Object.values(subtasks).map((subtask) => (
-            <Subtask
-              key={subtask.id}
-              subtask={subtask}
-              workspaceId={workspaceId}
-              taskGroupId={taskGroupId}
-              taskId={task.id}
-            />
-          ))}
-        </ul>
-      )}
     </li>
   );
 };
-export { Task };
+export { Subtask };
