@@ -1,3 +1,5 @@
+@import "src/variables.scss";
+
 .button {
   border: 0;
   background-color: transparent;
@@ -5,11 +7,16 @@
   justify-content: center;
   align-items: center;
   color: #88819f;
-  padding: 0;
+  min-width: 200px;
   font-family: Inter;
   font-size: 13px;
   gap: 6px;
   font-weight: 600;
-  cursor: pointer;
   padding: 6px;
+  cursor: pointer;
+  border-radius: 12px;
+
+  &:focus-visible {
+    outline: 2px solid $focused-outline-color;
+  }
 }

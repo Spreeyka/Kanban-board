@@ -3,12 +3,12 @@ import { useRef, useState } from "react";
 import IconButton from "@mui/material/IconButton";
 import { DeleteIcon } from "../../../../assets/icons/Delete";
 import { EditIcon } from "../../../../assets/icons/Edit";
-import { TickIcon } from "../../../../assets/icons/Tick";
 import { deleteSubtask, editSubtaskName, selectSubtaskState, toggleSubtaskState } from "../../../../store/slices";
 import { Subtask as SubtaskType } from "../../../../store/slices/types";
 import styles from "./styles.module.scss";
 
 import { useDispatch, useSelector } from "react-redux";
+import { EditConfirmButton } from "../components/editConfirmButton";
 import { CustomToggleButton } from "../components/toggleButton";
 
 const Subtask = ({
@@ -65,26 +65,23 @@ const Subtask = ({
 
   return (
     <li
-      tabIndex={0}
       onFocus={() => setIsFocused(true)}
       onBlur={() => setIsFocused(false)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className={styles.gridItemHeader}>
+      <div className={styles.gridItemHeader} tabIndex={0}>
         {isEditing ? (
-          <div style={{ display: "flex", gap: "6px", flex: 1 }}>
-            <input
-              value={text}
-              style={{ width: `${text.length}ch` }}
-              onChange={handleChange}
-              onBlur={handleSaveClick}
-              className={styles.customInput}
-              maxLength={22}
-              spellCheck="false"
-              ref={inputRef}
-            />
-          </div>
+          <input
+            value={text}
+            style={{ width: `${text.length}ch` }}
+            onChange={handleChange}
+            onBlur={handleSaveClick}
+            className={styles.customInput}
+            maxLength={22}
+            spellCheck="false"
+            ref={inputRef}
+          />
         ) : (
           <>
             <p className={styles.namePlaceholder}>{subtask.name}</p>
@@ -92,21 +89,7 @@ const Subtask = ({
         )}
 
         {isEditing ? (
-          <IconButton
-            aria-label="finish editing"
-            onClick={handleSaveClick}
-            size="large"
-            component="div"
-            sx={{
-              marginLeft: "4px",
-              padding: "6px",
-              "&:hover": {
-                backgroundColor: "transparent",
-              },
-            }}
-          >
-            <TickIcon fill="green" />
-          </IconButton>
+          <EditConfirmButton onClick={handleSaveClick} />
         ) : (
           <div
             className={styles.buttonGroup}

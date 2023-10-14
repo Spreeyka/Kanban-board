@@ -3,10 +3,11 @@ import { Dispatch, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { DeleteIcon } from "../../../assets/icons/Delete";
 import { EditIcon } from "../../../assets/icons/Edit";
-import { TickIcon } from "../../../assets/icons/Tick";
+
 import { WorkspaceIcon } from "../../../assets/icons/Workspace";
 import { deleteWorkspace, editWorkspace, selectWorkspaces } from "../../../store/slices";
 import styles from "./styles.module.scss";
+import { EditConfirmButton } from "../../Kanban/taskGroup/components/editConfirmButton";
 
 interface WorkspaceButtonProps {
   workspaceName: string;
@@ -87,31 +88,30 @@ const WorkspaceButton: React.FC<WorkspaceButtonProps> = ({
               spellCheck="false"
               ref={inputRef}
             />
-            <IconButton
-              aria-label="finish editing"
-              onClick={handleSaveClick}
-              size="large"
-              component="div"
-              sx={{
-                marginLeft: "4px",
-                padding: 0,
-                "&:hover": {
-                  backgroundColor: "transparent",
-                },
-              }}
-            >
-              <TickIcon fill="green" />
-            </IconButton>
+
+            <EditConfirmButton onClick={handleSaveClick} />
           </div>
         ) : (
           <div style={{ display: "flex", padding: "4px", flex: 1 }}>{workspaceName}</div>
         )}
 
         <div className={styles.buttonGroup} style={{ opacity: (isFocused || isHovered) && !isEditing ? "1" : "0" }}>
-          <IconButton aria-label="edit" sx={{ padding: 0 }} component="div" onClick={handleEditClick}>
+          <IconButton
+            aria-label="edit"
+            sx={{ border: 0, padding: "6px", borderRadius: 0 }}
+            component="div"
+            role="button"
+            onClick={handleEditClick}
+          >
             <EditIcon />
           </IconButton>
-          <IconButton aria-label="delete" sx={{ padding: 0 }} component="div" onClick={handleDelete}>
+          <IconButton
+            aria-label="delete"
+            role="button"
+            sx={{ border: 0, padding: "6px", borderRadius: 0 }}
+            component="div"
+            onClick={handleDelete}
+          >
             <DeleteIcon />
           </IconButton>
         </div>

@@ -1,6 +1,7 @@
 import { createSelector, createSlice } from "@reduxjs/toolkit";
-import { BoardState, RootState } from "./types";
+import { BoardState, RootState, Task, TaskGroup } from "./types";
 import { v4 as uuidv4 } from "uuid";
+import { arrayMove } from "@dnd-kit/sortable";
 
 const workspaceId = uuidv4();
 const taskGroupId = uuidv4();
@@ -26,6 +27,7 @@ const initialState: BoardState = {
                   id: subtaskId,
                   name: "Subtask example",
                   done: true,
+                  subtasks: {},
                 },
               },
             },
@@ -155,6 +157,37 @@ export const boardSlice = createSlice({
         subtask.done = !subtask.done;
       }
     },
+    reorderTaskGroups: (state, action) => {
+      const { workspaceId, oldIndex, newIndex } = action.payload;
+      const workspace = state.workspaces[workspaceId];
+      const taskGroups = workspace.taskGroups;
+
+      const taskGroupsArray = Object.values(taskGroups);
+      const reorderedTaskGroupsArray = arrayMove([...taskGroupsArray], oldIndex, newIndex);
+
+      const reorderedTaskGroups = reorderedTaskGroupsArray.reduce((acc: Record<string, TaskGroup>, taskGroup) => {
+        acc[taskGroup.id] = taskGroup;
+        return acc;
+      }, {});
+
+      workspace.taskGroups = reorderedTaskGroups;
+    },
+    reorderTasks: (state, action) => {
+      const { workspaceId, taskGroupId, oldIndex, newIndex } = action.payload;
+      const workspace = state.workspaces[workspaceId];
+      const taskGroup = workspace.taskGroups[taskGroupId];
+      const tasks = taskGroup.tasks;
+
+      const tasksArray = Object.values(tasks);
+      const reorderedTasksArray = arrayMove([...tasksArray], oldIndex, newIndex);
+
+      const reorderedTasks = reorderedTasksArray.reduce((acc: Record<string, Task>, task) => {
+        acc[task.id] = task;
+        return acc;
+      }, {});
+
+      taskGroup.tasks = reorderedTasks;
+    },
   },
 });
 
@@ -172,6 +205,8 @@ export const {
   deleteSubtask,
   toggleTaskState,
   toggleSubtaskState,
+  reorderTaskGroups,
+  reorderTasks,
 } = boardSlice.actions;
 
 export const selectWorkspaces = (state: RootState) => state.board.workspaces;
@@ -222,4 +257,50 @@ export const countDoneTasksAndSubtasks = (workspaceId: string, taskGroupId: stri
       doneTasks,
       doneSubtasks,
     };
+  });
+
+export const selectTaskGroupsList = (activeWorkspace: string) =>
+  createSelector(selectWorkspaces, (workspaces) => {
+    if (workspaces[activeWorkspace]) {
+      return Object.values(workspaces[activeWorkspace].taskGroups);
+    } else {
+      return [];
+    }
+  });
+
+export const selectTasksList = (activeWorkspace: string, activeTaskGroup: string) =>
+  createSelector(selectWorkspaces, (workspaces) => {
+    if (workspaces[activeWorkspace] && workspaces[activeWorkspace].taskGroups[activeTaskGroup]) {
+      return Object.values(workspaces[activeWorkspace].taskGroups[activeTaskGroup].tasks);
+    } else {
+      return [];
+    }
+  });
+
+export const selectFlattenedTasksWithDepth = (activeWorkspace: string, activeTaskGroup: string) =>
+  createSelector(selectWorkspaces, (workspaces) => {
+    const flattenedTasks: Array<{
+      id: string;
+      name: string;
+      depth: number;
+      parentId: string | null;
+    }> = [];
+
+    const extractTasks = (tasks: Record<string, Task>, parentId: string | null, depth: number) => {
+      for (const taskId in tasks) {
+        const task = tasks[taskId];
+        flattenedTasks.push({ ...task, depth, parentId });
+
+        if (task.subtasks) {
+          extractTasks(task.subtasks, task.id, depth + 1);
+        }
+      }
+    };
+
+    if (workspaces[activeWorkspace] && workspaces[activeWorkspace].taskGroups[activeTaskGroup]) {
+      const tasks = workspaces[activeWorkspace].taskGroups[activeTaskGroup].tasks;
+      extractTasks(tasks, null, 0);
+    }
+
+    return flattenedTasks;
   });

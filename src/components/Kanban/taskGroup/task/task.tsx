@@ -1,4 +1,9 @@
 import { useRef, useState } from "react";
+import IconButton from "@mui/material/IconButton";
+import { useDispatch, useSelector } from "react-redux";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
 import { DeleteIcon } from "../../../../assets/icons/Delete";
 import { EditIcon } from "../../../../assets/icons/Edit";
 import {
@@ -9,15 +14,12 @@ import {
   selectTaskState,
 } from "../../../../store/slices";
 import { Task as TaskType } from "../../../../store/slices/types";
-import styles from "./styles.module.scss";
-import IconButton from "@mui/material/IconButton";
-
-import { useDispatch, useSelector } from "react-redux";
-import { TickIcon } from "../../../../assets/icons/Tick";
 import { Subtask } from "../subtask/subtask";
 import { CustomToggleButton } from "../components/toggleButton";
+import { EditConfirmButton } from "../components/editConfirmButton";
+import styles from "./styles.module.scss";
 
-const Task = ({ task, workspaceId, taskGroupId }: { task: TaskType; workspaceId: string; taskGroupId: string }) => {
+const Task = ({ task, workspaceId, taskGroupId }: { task: any; workspaceId: string; taskGroupId: string }) => {
   const dispatch = useDispatch();
   const taskId = task.id;
   const [text, setText] = useState(task.name);
@@ -39,7 +41,6 @@ const Task = ({ task, workspaceId, taskGroupId }: { task: TaskType; workspaceId:
 
   const handleSaveClick = (e: React.MouseEvent<HTMLDivElement> | React.FocusEvent<HTMLDivElement>) => {
     e.stopPropagation();
-    console.log("text", text);
     dispatch(editTaskName({ workspaceId, taskGroupId, taskId, newTaskName: text }));
     setIsEditing(false);
   };
@@ -54,8 +55,17 @@ const Task = ({ task, workspaceId, taskGroupId }: { task: TaskType; workspaceId:
 
   const subtasks = useSelector(selectSubtasksForTask(workspaceId, taskGroupId, taskId));
 
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: taskId });
+
+  const style = {
+    transition,
+    transform: CSS.Translate.toString(transform),
+    opacity: isDragging ? 0.5 : undefined,
+    paddingLeft: task.depth > 0 ? "20px" : 0,
+  };
+
   return (
-    <li style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+    <li className={styles.flexSpaced} ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <div
         className={styles.gridItemHeader}
         tabIndex={0}
@@ -65,19 +75,17 @@ const Task = ({ task, workspaceId, taskGroupId }: { task: TaskType; workspaceId:
         onMouseLeave={() => setIsHovered(false)}
       >
         {isEditing ? (
-          <div style={{ display: "flex", gap: "6px", flex: "1" }}>
-            <input
-              value={text}
-              //trick to make input grow
-              style={{ width: `${text.length}ch` }}
-              onChange={handleChange}
-              onBlur={handleSaveClick}
-              className={styles.customInput}
-              maxLength={38}
-              spellCheck="false"
-              ref={inputRef}
-            />
-          </div>
+          <input
+            value={text}
+            //trick to make input grow
+            style={{ width: `${text.length}ch` }}
+            onChange={handleChange}
+            onBlur={handleSaveClick}
+            className={styles.customInput}
+            maxLength={38}
+            spellCheck="false"
+            ref={inputRef}
+          />
         ) : (
           <>
             <p className={styles.namePlaceholder}>{task.name}</p>
@@ -85,22 +93,7 @@ const Task = ({ task, workspaceId, taskGroupId }: { task: TaskType; workspaceId:
         )}
 
         {isEditing ? (
-          <IconButton
-            aria-label="finish editing"
-            onClick={handleSaveClick}
-            size="large"
-            component="div"
-            sx={{
-              border: 0,
-              padding: "6px",
-              borderRadius: 0,
-              "&:hover": {
-                backgroundColor: "lightgreen",
-              },
-            }}
-          >
-            <TickIcon fill="green" />
-          </IconButton>
+          <EditConfirmButton onClick={handleSaveClick} />
         ) : (
           <div
             className={styles.buttonGroup}
@@ -136,7 +129,7 @@ const Task = ({ task, workspaceId, taskGroupId }: { task: TaskType; workspaceId:
           />
         )}
       </div>
-      {Object.values(subtasks).length > 0 && (
+      {/* {Object.values(subtasks).length > 0 && (
         <ul className={styles.subtaskList}>
           {Object.values(subtasks).map((subtask) => (
             <Subtask
@@ -148,7 +141,7 @@ const Task = ({ task, workspaceId, taskGroupId }: { task: TaskType; workspaceId:
             />
           ))}
         </ul>
-      )}
+      )} */}
     </li>
   );
 };

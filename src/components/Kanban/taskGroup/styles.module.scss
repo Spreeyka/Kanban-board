@@ -11,7 +11,7 @@
   min-width: 294px;
   margin: 0px 10px;
   transition: background-color 350ms ease;
-  padding: 16px 8px;
+  padding: 16px 8px 8px 8px;
   background-color: #ecf1fd;
   border: 1px solid rgba(0, 0, 0, 0.05);
   font-size: 1em;
@@ -20,6 +20,18 @@
   &:focus-visible {
     outline: 2px solid $focused-outline-color;
   }
+}
+
+.flexColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.flexSpaced {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .taskGroupName {
@@ -37,7 +49,6 @@
   margin-top: 8px;
   justify-content: center;
   display: flex;
-  margin-left: -10px;
 }
 
 .taskList {

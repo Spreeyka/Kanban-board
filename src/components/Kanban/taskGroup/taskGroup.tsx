@@ -1,21 +1,34 @@
+import { IconButton } from "@mui/material";
+import { useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { DeleteIcon } from "../../../assets/icons/Delete";
+import { EditIcon } from "../../../assets/icons/Edit";
 import { Plus } from "../../../assets/icons/Plus";
 import {
   addTask,
   countDoneTasksAndSubtasks,
   deleteTaskGroup,
   editTaskGroupName,
+  reorderTasks,
+  selectFlattenedTasksWithDepth,
   selectTasksForTaskGroup,
+  selectTasksList,
 } from "../../../store/slices";
+import { TaskGroup as TaskGroupType } from "../../../store/slices/types";
 import { AddListButton } from "../../KanbanBoard/components/AddListButton";
+import { EditConfirmButton } from "./components/editConfirmButton";
 import styles from "./styles.module.scss";
 import { Task } from "./task/task";
-import { TaskGroup as TaskGroupType } from "../../../store/slices/types";
-import { useRef, useState } from "react";
-import { IconButton } from "@mui/material";
-import { TickIcon } from "../../../assets/icons/Tick";
-import { EditIcon } from "../../../assets/icons/Edit";
-import { DeleteIcon } from "../../../assets/icons/Delete";
+
+import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors } from "@dnd-kit/core";
+import {
+  SortableContext,
+  horizontalListSortingStrategy,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const TaskGroup = ({
   workspaceId,
@@ -28,6 +41,8 @@ const TaskGroup = ({
 }) => {
   const dispatch = useDispatch();
   const tasks = useSelector(selectTasksForTaskGroup(workspaceId, taskGroupId));
+  const { doneTasks, doneSubtasks } = useSelector(countDoneTasksAndSubtasks(workspaceId, taskGroupId));
+
   const [text, setText] = useState(taskGroup.name);
   const [isEditing, setIsEditing] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -38,8 +53,6 @@ const TaskGroup = ({
     const taskName = "New Task";
     dispatch(addTask({ workspaceId, taskGroupId, taskName }));
   };
-
-  const { doneTasks, doneSubtasks } = useSelector(countDoneTasksAndSubtasks(workspaceId, taskGroupId));
 
   const handleRemoveTask = () => {
     dispatch(deleteTaskGroup({ workspaceId, taskGroupId }));
@@ -52,7 +65,6 @@ const TaskGroup = ({
 
   const handleSaveClick = (e: React.MouseEvent<HTMLDivElement> | React.FocusEvent<HTMLDivElement>) => {
     e.stopPropagation();
-    console.log("text", text);
     dispatch(editTaskGroupName({ workspaceId, taskGroupId, newTaskGroupName: text }));
     setIsEditing(false);
   };
@@ -65,70 +77,89 @@ const TaskGroup = ({
     }, 0);
   };
 
-  // style schować do klas, te które są inline
-  // ujednolicić outline wszędzie
-  // ujednolicić hovery radius do ikonek
-  // powiększyć button do dodawania kolejnej listy
-  // naprawić bug, że nie targetuje taska (ale subtaska już targetuje)
-  // powiększyć paddingi buttonów z workspace button
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: taskGroupId });
 
-  // instalacja React D&D kit
-  // Dodanie kontekstów
-  // Dodanie przeciągania dla grup
-  // Dodanie przeciągania dla tasków
-  // Dodanie przeciągania dla subtasków
-  // Dodanie ładnego indykatora, że można przeciągnie do taska lub subtaska
+  const style = {
+    transition,
+    transform: CSS.Translate.toString(transform),
+    opacity: isDragging ? 0.5 : undefined,
+  };
 
-  // Dodanie przeciągania do innego workspace
-  // Zapisywanie stanu w local storage
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  //const taskList = useSelector(selectTasksList(workspaceId, taskGroupId));
+
+  {
+    /* Chcemy mieć taski i subtaski w jednej tablicy z parametrem depth */
+  }
+
+  const flattenedTasks = useSelector(selectFlattenedTasksWithDepth(workspaceId, taskGroupId));
+
+  console.log("flattenedTasks", flattenedTasks);
+
+  function handleDragEnd(event) {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      const oldIndex = flattenedTasks.findIndex((task) => task.id === active.id);
+      const newIndex = flattenedTasks.findIndex((task) => task.id === over?.id);
+
+      console.log("oldIndex", oldIndex);
+      console.log("newIndex", newIndex);
+
+      dispatch(
+        reorderTasks({
+          workspaceId,
+          taskGroupId,
+          oldIndex,
+          newIndex,
+        })
+      );
+    }
+  }
 
   return (
     <>
       <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
         className={styles.taskGroupWrapper}
-        style={{ display: "flex" }}
         tabIndex={0}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
+        <div className={styles.flexColumn}>
+          <div className={styles.flexSpaced}>
             {isEditing ? (
-              <div style={{ display: "flex", gap: "6px", flex: "1" }}>
-                <input
-                  value={text}
-                  //trick to make input grow
-                  style={{ width: `${text.length}ch` }}
-                  onChange={handleChange}
-                  onBlur={handleSaveClick}
-                  className={styles.customInput}
-                  maxLength={38}
-                  spellCheck="false"
-                  ref={inputRef}
-                />
-              </div>
+              <input
+                value={text}
+                //trick to make input grow
+                style={{ width: `${text.length}ch` }}
+                onChange={handleChange}
+                onBlur={handleSaveClick}
+                className={styles.customInput}
+                maxLength={38}
+                spellCheck="false"
+                ref={inputRef}
+              />
             ) : (
               <p className={styles.taskGroupName}>{taskGroup.name}</p>
             )}
             {isEditing ? (
-              <IconButton
-                aria-label="finish editing"
-                onClick={handleSaveClick}
-                size="large"
-                component="div"
-                sx={{
-                  border: 0,
-                  padding: "6px",
-                  borderRadius: 0,
-                  "&:hover": {
-                    backgroundColor: "lightgreen",
-                  },
-                }}
-              >
-                <TickIcon fill="green" />
-              </IconButton>
+              <EditConfirmButton onClick={handleSaveClick} />
             ) : (
               <div
                 className={styles.buttonGroup}
@@ -156,11 +187,16 @@ const TaskGroup = ({
           <p className={styles.taskDoneDescription}>{doneTasks + doneSubtasks} tasks done</p>
         </div>
 
-        <ul className={styles.taskList}>
-          {Object.values(tasks).map((task) => (
-            <Task key={task.id} task={task} workspaceId={workspaceId} taskGroupId={taskGroupId} />
-          ))}
-        </ul>
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={flattenedTasks} strategy={verticalListSortingStrategy}>
+            <ul className={styles.taskList}>
+              {flattenedTasks.map((task) => (
+                <Task key={task.id} task={task} workspaceId={workspaceId} taskGroupId={taskGroupId} />
+              ))}
+            </ul>
+          </SortableContext>
+        </DndContext>
+
         <div className={styles.addListButtonWrapper}>
           <AddListButton onClick={addTaskToGroup}>
             <Plus fill="#88819F" /> Add a card
