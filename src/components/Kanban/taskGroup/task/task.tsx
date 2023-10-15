@@ -6,20 +6,13 @@ import { CSS } from "@dnd-kit/utilities";
 
 import { DeleteIcon } from "../../../../assets/icons/Delete";
 import { EditIcon } from "../../../../assets/icons/Edit";
-import {
-  editTaskName,
-  deleteTask,
-  selectSubtasksForTask,
-  toggleTaskState,
-  selectTaskState,
-} from "../../../../store/slices";
-import { Task as TaskType } from "../../../../store/slices/types";
-import { Subtask } from "../subtask/subtask";
+import { editTaskName, deleteTask, toggleTaskState, selectTaskState } from "../../../../store/slices";
 import { CustomToggleButton } from "../components/toggleButton";
 import { EditConfirmButton } from "../components/editConfirmButton";
+import { Task as TaskType } from "../../../../store/slices/types";
 import styles from "./styles.module.scss";
 
-const Task = ({ task, workspaceId, taskGroupId }: { task: any; workspaceId: string; taskGroupId: string }) => {
+const Task = ({ task, workspaceId, taskGroupId }: { task: TaskType; workspaceId: string; taskGroupId: string }) => {
   const dispatch = useDispatch();
   const taskId = task.id;
   const [text, setText] = useState(task.name);
@@ -52,8 +45,6 @@ const Task = ({ task, workspaceId, taskGroupId }: { task: any; workspaceId: stri
       if (inputRef.current) inputRef.current.focus();
     }, 0);
   };
-
-  const subtasks = useSelector(selectSubtasksForTask(workspaceId, taskGroupId, taskId));
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: taskId });
 
@@ -129,19 +120,6 @@ const Task = ({ task, workspaceId, taskGroupId }: { task: any; workspaceId: stri
           />
         )}
       </div>
-      {/* {Object.values(subtasks).length > 0 && (
-        <ul className={styles.subtaskList}>
-          {Object.values(subtasks).map((subtask) => (
-            <Subtask
-              key={subtask.id}
-              subtask={subtask}
-              workspaceId={workspaceId}
-              taskGroupId={taskGroupId}
-              taskId={task.id}
-            />
-          ))}
-        </ul>
-      )} */}
     </li>
   );
 };

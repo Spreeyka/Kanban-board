@@ -22,14 +22,15 @@ const initialState: BoardState = {
               id: taskId,
               name: "Create a video for Acme",
               done: true,
-              subtasks: {
-                [subtaskId]: {
-                  id: subtaskId,
-                  name: "Subtask example",
-                  done: true,
-                  subtasks: {},
-                },
-              },
+              depth: 0,
+              parentId: null,
+            },
+            [subtaskId]: {
+              id: subtaskId,
+              name: "Create a video for Acme",
+              done: true,
+              depth: 1,
+              parentId: taskId,
             },
           },
         },
@@ -93,7 +94,7 @@ export const boardSlice = createSlice({
 
       if (taskGroup) {
         const newId = uuidv4();
-        taskGroup.tasks[newId] = { id: newId, name: taskName, subtasks: {}, done: false };
+        taskGroup.tasks[newId] = { id: newId, name: taskName, done: false, depth: 0, parentId: null };
       }
     },
     deleteTask: (state, action) => {
@@ -114,28 +115,6 @@ export const boardSlice = createSlice({
         state.workspaces[workspaceId].taskGroups[taskGroupId].tasks[taskId].name = newTaskName;
       }
     },
-
-    editSubtaskName: (state, action) => {
-      const { workspaceId, taskGroupId, taskId, subtaskId, newName } = action.payload;
-      const workspace = state.workspaces[workspaceId];
-      const taskGroup = workspace?.taskGroups[taskGroupId];
-      const task = taskGroup?.tasks[taskId];
-      const subtask = task?.subtasks[subtaskId];
-
-      if (workspace && taskGroup && task && subtask) {
-        subtask.name = newName;
-      }
-    },
-    deleteSubtask: (state, action) => {
-      const { workspaceId, taskGroupId, taskId, subtaskId } = action.payload;
-      const workspace = state.workspaces[workspaceId];
-      const taskGroup = workspace?.taskGroups[taskGroupId];
-      const task = taskGroup?.tasks[taskId];
-
-      if (workspace && taskGroup && task) {
-        delete task.subtasks[subtaskId];
-      }
-    },
     toggleTaskState: (state, action) => {
       const { workspaceId, taskGroupId, taskId } = action.payload;
       const workspace = state.workspaces[workspaceId];
@@ -144,17 +123,6 @@ export const boardSlice = createSlice({
 
       if (workspace && taskGroup && task) {
         task.done = !task.done;
-      }
-    },
-    toggleSubtaskState: (state, action) => {
-      const { workspaceId, taskGroupId, taskId, subtaskId } = action.payload;
-      const workspace = state.workspaces[workspaceId];
-      const taskGroup = workspace?.taskGroups[taskGroupId];
-      const task = taskGroup?.tasks[taskId];
-      const subtask = task?.subtasks[subtaskId];
-
-      if (workspace && taskGroup && task && subtask) {
-        subtask.done = !subtask.done;
       }
     },
     reorderTaskGroups: (state, action) => {
@@ -188,6 +156,16 @@ export const boardSlice = createSlice({
 
       taskGroup.tasks = reorderedTasks;
     },
+    changeSubtaskParent: (state, action) => {
+      const { workspaceId, taskGroupId, sourceTaskId, targetTaskId } = action.payload;
+
+      const workspace = state.workspaces[workspaceId];
+      const taskGroup = workspace.taskGroups[taskGroupId];
+      const tasks = taskGroup.tasks;
+
+      tasks[sourceTaskId].depth = 0;
+      tasks[sourceTaskId].parentId = targetTaskId;
+    },
   },
 });
 
@@ -201,12 +179,10 @@ export const {
   addTask,
   deleteTask,
   editTaskName,
-  editSubtaskName,
-  deleteSubtask,
   toggleTaskState,
-  toggleSubtaskState,
   reorderTaskGroups,
   reorderTasks,
+  changeSubtaskParent,
 } = boardSlice.actions;
 
 export const selectWorkspaces = (state: RootState) => state.board.workspaces;
@@ -220,43 +196,22 @@ export const selectTasksForTaskGroup = (workspaceId: string, taskGroupId: string
     }
   });
 
-export const selectSubtasksForTask = (workspaceId: string, taskGroupId: string, taskId: string) =>
-  createSelector(selectTasksForTaskGroup(workspaceId, taskGroupId), (tasks) => {
-    const task = tasks[taskId];
-    return task ? task.subtasks : {};
-  });
-
 export const selectTaskState = (workspaceId: string, taskGroupId: string, taskId: string) =>
   createSelector(selectTasksForTaskGroup(workspaceId, taskGroupId), (tasks) => {
     return tasks[taskId] ? tasks[taskId].done : false;
   });
 
-export const selectSubtaskState = (workspaceId: string, taskGroupId: string, taskId: string, subtaskId: string) =>
-  createSelector(selectSubtasksForTask(workspaceId, taskGroupId, taskId), (subtasks) => {
-    return subtasks[subtaskId] ? subtasks[subtaskId].done : false;
-  });
-
 export const countDoneTasksAndSubtasks = (workspaceId: string, taskGroupId: string) =>
   createSelector(selectTasksForTaskGroup(workspaceId, taskGroupId), (tasks) => {
     let doneTasks = 0;
-    let doneSubtasks = 0;
 
     Object.values(tasks).forEach((task) => {
       if (task.done) {
         doneTasks++;
       }
-
-      Object.values(task.subtasks).forEach((subtask) => {
-        if (subtask.done) {
-          doneSubtasks++;
-        }
-      });
     });
 
-    return {
-      doneTasks,
-      doneSubtasks,
-    };
+    return doneTasks;
   });
 
 export const selectTaskGroupsList = (activeWorkspace: string) =>
@@ -277,30 +232,18 @@ export const selectTasksList = (activeWorkspace: string, activeTaskGroup: string
     }
   });
 
-export const selectFlattenedTasksWithDepth = (activeWorkspace: string, activeTaskGroup: string) =>
-  createSelector(selectWorkspaces, (workspaces) => {
-    const flattenedTasks: Array<{
-      id: string;
-      name: string;
-      depth: number;
-      parentId: string | null;
-    }> = [];
+const getWorkspaceById = (state: RootState, workspaceId: string) => state.board.workspaces[workspaceId];
 
-    const extractTasks = (tasks: Record<string, Task>, parentId: string | null, depth: number) => {
-      for (const taskId in tasks) {
-        const task = tasks[taskId];
-        flattenedTasks.push({ ...task, depth, parentId });
-
-        if (task.subtasks) {
-          extractTasks(task.subtasks, task.id, depth + 1);
-        }
+export const getAllTasksInWorkspace = createSelector([getWorkspaceById], (workspace) => {
+  if (workspace && workspace.taskGroups) {
+    const allTasks = Object.values(workspace.taskGroups).reduce((tasks: Task[], taskGroup) => {
+      if (taskGroup.tasks) {
+        return [...tasks, ...Object.values(taskGroup.tasks)];
       }
-    };
+      return tasks;
+    }, []);
 
-    if (workspaces[activeWorkspace] && workspaces[activeWorkspace].taskGroups[activeTaskGroup]) {
-      const tasks = workspaces[activeWorkspace].taskGroups[activeTaskGroup].tasks;
-      extractTasks(tasks, null, 0);
-    }
-
-    return flattenedTasks;
-  });
+    return allTasks;
+  }
+  return [];
+});

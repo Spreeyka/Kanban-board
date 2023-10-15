@@ -9,9 +9,8 @@ import {
   countDoneTasksAndSubtasks,
   deleteTaskGroup,
   editTaskGroupName,
+  getAllTasksInWorkspace,
   reorderTasks,
-  selectFlattenedTasksWithDepth,
-  selectTasksForTaskGroup,
   selectTasksList,
 } from "../../../store/slices";
 import { TaskGroup as TaskGroupType } from "../../../store/slices/types";
@@ -20,15 +19,21 @@ import { EditConfirmButton } from "./components/editConfirmButton";
 import styles from "./styles.module.scss";
 import { Task } from "./task/task";
 
-import { DndContext, KeyboardSensor, PointerSensor, closestCenter, useSensor, useSensors } from "@dnd-kit/core";
 import {
-  SortableContext,
-  horizontalListSortingStrategy,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { createPortal } from "react-dom";
+import { RootState } from "../../../store/store";
 
 const TaskGroup = ({
   workspaceId,
@@ -40,8 +45,7 @@ const TaskGroup = ({
   taskGroup: TaskGroupType;
 }) => {
   const dispatch = useDispatch();
-  const tasks = useSelector(selectTasksForTaskGroup(workspaceId, taskGroupId));
-  const { doneTasks, doneSubtasks } = useSelector(countDoneTasksAndSubtasks(workspaceId, taskGroupId));
+  const doneTasks = useSelector(countDoneTasksAndSubtasks(workspaceId, taskGroupId));
 
   const [text, setText] = useState(taskGroup.name);
   const [isEditing, setIsEditing] = useState(false);
@@ -96,35 +100,35 @@ const TaskGroup = ({
     })
   );
 
-  //const taskList = useSelector(selectTasksList(workspaceId, taskGroupId));
+  const taskList = useSelector(selectTasksList(workspaceId, taskGroupId));
 
-  {
-    /* Chcemy mieć taski i subtaski w jednej tablicy z parametrem depth */
-  }
+  console.log("taskList", taskList);
 
-  const flattenedTasks = useSelector(selectFlattenedTasksWithDepth(workspaceId, taskGroupId));
+  // Można pomniejszyć task, jeśli będzie w odpowiednich koordynatach
+  // Dzięki temu będzie widoczne, gdzie wyląduje
 
-  console.log("flattenedTasks", flattenedTasks);
-
-  function handleDragEnd(event) {
+  function handleDragEnd(event: DragEndEvent) {
+    console.log("event", event);
     const { active, over } = event;
 
-    if (active.id !== over?.id) {
-      const oldIndex = flattenedTasks.findIndex((task) => task.id === active.id);
-      const newIndex = flattenedTasks.findIndex((task) => task.id === over?.id);
+    if (active.id === over?.id) return;
 
-      console.log("oldIndex", oldIndex);
-      console.log("newIndex", newIndex);
+    // tutaj nie znajdzie takiego taska, bo on jest w innym kontenerze !
 
-      dispatch(
-        reorderTasks({
-          workspaceId,
-          taskGroupId,
-          oldIndex,
-          newIndex,
-        })
-      );
-    }
+    // const sourceTask = allTasks.find((task) => task.id === active.id);
+    // const targetTask = allTasks.find((task) => task.id === over.id);
+
+    const oldIndex = taskList.findIndex((task) => task.id === active.id);
+    const newIndex = taskList.findIndex((task) => task.id === over?.id);
+
+    dispatch(
+      reorderTasks({
+        workspaceId,
+        taskGroupId,
+        oldIndex,
+        newIndex,
+      })
+    );
   }
 
   return (
@@ -184,18 +188,24 @@ const TaskGroup = ({
               </div>
             )}
           </div>
-          <p className={styles.taskDoneDescription}>{doneTasks + doneSubtasks} tasks done</p>
+          <p className={styles.taskDoneDescription}>{doneTasks} tasks done</p>
         </div>
 
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={flattenedTasks} strategy={verticalListSortingStrategy}>
-            <ul className={styles.taskList}>
-              {flattenedTasks.map((task) => (
-                <Task key={task.id} task={task} workspaceId={workspaceId} taskGroupId={taskGroupId} />
-              ))}
-            </ul>
-          </SortableContext>
-        </DndContext>
+        {/* <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}> */}
+        <SortableContext items={taskList} strategy={verticalListSortingStrategy}>
+          <ul className={styles.taskList}>
+            {taskList.map((task) => (
+              <Task key={task.id} task={task} workspaceId={workspaceId} taskGroupId={taskGroupId} />
+            ))}
+          </ul>
+        </SortableContext>
+        {createPortal(
+          <DragOverlay>
+            <div>123</div>
+          </DragOverlay>,
+          document.body
+        )}
+        {/* </DndContext> */}
 
         <div className={styles.addListButtonWrapper}>
           <AddListButton onClick={addTaskToGroup}>

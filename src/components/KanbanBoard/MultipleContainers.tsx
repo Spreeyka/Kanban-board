@@ -311,6 +311,7 @@ export function MultipleContainers({
         }
 
         if (activeContainer !== overContainer) {
+          console.log("Przypadek, gdy poruszono na ten sam indeks do innego kontenera ");
           setItems((items) => {
             const activeItems = items[activeContainer];
             const overItems = items[overContainer];
@@ -347,7 +348,12 @@ export function MultipleContainers({
         }
       }}
       onDragEnd={({ active, over }) => {
+        //
+        // Co sprawia, że on zachowuje się dobrze pomiędzy dwoma kontenerami, a mój nie?
+        // Zweryfikować i zreplikować
+
         if (active.id in items && over?.id) {
+          console.log("Poruszono kontenerami");
           setContainers((containers) => {
             const activeIndex = containers.indexOf(active.id);
             const overIndex = containers.indexOf(over.id);
@@ -401,6 +407,7 @@ export function MultipleContainers({
           const overIndex = items[overContainer].indexOf(overId);
 
           if (activeIndex !== overIndex) {
+            console.log("Poruszono itemkami 2");
             setItems((items) => ({
               ...items,
               [overContainer]: arrayMove(items[overContainer], activeIndex, overIndex),
