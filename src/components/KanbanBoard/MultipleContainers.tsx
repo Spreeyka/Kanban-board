@@ -172,6 +172,9 @@ export function MultipleContainers({
   const recentlyMovedToNewContainer = useRef(false);
   const isSortingContainer = activeId ? containers.includes(activeId) : false;
 
+  console.log("containers", containers);
+  console.log("items", items);
+
   /**
    * Custom collision detection strategy optimized for multiple containers
    *
@@ -182,6 +185,7 @@ export function MultipleContainers({
    */
   const collisionDetectionStrategy: CollisionDetection = useCallback(
     (args) => {
+      console.log("1", 1);
       if (activeId && activeId in items) {
         return closestCenter({
           ...args,

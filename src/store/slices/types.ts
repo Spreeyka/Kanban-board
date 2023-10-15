@@ -1,14 +1,8 @@
 import { store } from "../store";
 
-// export interface Subtask {
-//   id: string;
-//   name: string;
-//   done: boolean;
-//   subtasks: Record<string, Subtask>;
-// }
-
 export interface Task {
   id: string;
+  taskGroupId: string;
   name: string;
   done: boolean;
   depth: number;

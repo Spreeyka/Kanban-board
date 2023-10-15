@@ -2,7 +2,13 @@ import { useDispatch, useSelector } from "react-redux";
 import { AddGroup } from "./addGroup/addGroup";
 import styles from "./styles.module.scss";
 
-import { getAllTasksInWorkspace, reorderTaskGroups, selectTaskGroupsList } from "../../store/slices";
+import {
+  getAllTasksInWorkspace,
+  reorderTaskGroups,
+  reorderTasks,
+  selectTaskGroupsList,
+  transformDataSelector,
+} from "../../store/slices";
 import { TaskGroup } from "./taskGroup/taskGroup";
 
 import {
@@ -10,12 +16,17 @@ import {
   DragEndEvent,
   KeyboardSensor,
   PointerSensor,
-  closestCenter,
   useSensor,
   useSensors,
+  UniqueIdentifier,
+  DragOverlay,
 } from "@dnd-kit/core";
 import { SortableContext, horizontalListSortingStrategy, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { RootState } from "../../store/store";
+import { useState } from "react";
+
+import { UseCustomDetection } from "../../hooks/useCustomDetection";
+import { createPortal } from "react-dom";
 
 const Kanban = ({ activeWorkspace }: { activeWorkspace: string }) => {
   const taskGroups = useSelector(selectTaskGroupsList(activeWorkspace));
@@ -37,43 +48,89 @@ const Kanban = ({ activeWorkspace }: { activeWorkspace: string }) => {
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
 
-    if (active.id !== over?.id) {
-      const oldIndex = taskGroups.findIndex((taskGroup) => taskGroup.id === active.id);
-      const newIndex = taskGroups.findIndex((taskGroup) => taskGroup.id === over?.id);
+    const itemNotMoved = active.id === over?.id;
+    if (itemNotMoved) return;
 
-      const sourceTask = allTasks.find((task) => task.id === active.id);
-      const targetTask = allTasks.find((task) => task.id === over.id);
+    const sourceTaskIndex = allTasks.findIndex((task) => task.id === active.id);
+    const targetTaskIndex = allTasks.findIndex((task) => task.id === over?.id);
+    const sourceGroupIndex = taskGroups.findIndex((taskGroup) => taskGroup.id === active.id);
+    const targetGroupIndex = taskGroups.findIndex((taskGroup) => taskGroup.id === over?.id);
 
-      console.log("sourceTask", sourceTask);
-      console.log("targetTask", targetTask);
+    const groupsMoving = sourceGroupIndex !== -1 && targetGroupIndex !== -1;
+    const tasksMoving = sourceTaskIndex !== -1 && targetTaskIndex !== -1;
 
-      const itemOver = taskGroups.find((taskGroup) => taskGroup.id === over?.id);
-      console.log("itemOver", itemOver);
+    console.log("sourceTaskIndex", sourceTaskIndex);
+    console.log("targetTaskIndex", targetTaskIndex);
 
-      // trzeba sprawdzić, czy zgadza się grupa i zrobić ifa:
-      //    - jeśli się zgadza, to robimy reorder
-      //    - jeśli się nie zgadza, to usuwamy z bieżącego i dodajemy do innego
+    console.log("allTasks", allTasks);
+
+    const sourceTask = allTasks.find((task) => task.id === active.id);
+    const targetTask = allTasks.find((task) => task.id === over.id);
+
+    const moveInSingleGroup = sourceTask?.taskGroupId === targetTask?.taskGroupId;
+    console.log("moveInSingleGroup", moveInSingleGroup);
+    // Dodać warunek, że taski poruszane w obrębie tego samego kontenera
+    // Dodać warunek, że taski poruszane w różnych kontenerach
+
+    if (tasksMoving) {
+      if (moveInSingleGroup) {
+        console.log("taski poruszane");
+        const groupIdOfGivenTask = allTasks.find((task) => task.id === over?.id)?.taskGroupId;
+        const tasksForGivenGroup = allTasks.filter((task) => task.taskGroupId === groupIdOfGivenTask);
+
+        const sourceTaskIndex = tasksForGivenGroup.findIndex((task) => task.id === active.id);
+        const targetTaskIndex = tasksForGivenGroup.findIndex((task) => task.id === over?.id);
+
+        dispatch(
+          reorderTasks({
+            workspaceId: activeWorkspace,
+            taskGroupId: groupIdOfGivenTask,
+            oldIndex: sourceTaskIndex,
+            newIndex: targetTaskIndex,
+          })
+        );
+      } else {
+        // TODO:
+        // reducer, który przenosi taska z jednej grupy do drugiej
+        // overlay będzie konieczny z komponentem prezentacyjnym
+      }
+    }
+
+    if (groupsMoving) {
+      console.log("grupy poruszane");
+      const targetGroupIndex = taskGroups.findIndex((taskGroup) => taskGroup.id === over?.id);
 
       dispatch(
         reorderTaskGroups({
           workspaceId: activeWorkspace,
-          oldIndex: oldIndex,
-          newIndex: newIndex,
+          oldIndex: sourceGroupIndex,
+          newIndex: targetGroupIndex,
         })
       );
     }
-  }
 
-  // Dodanie możliwości przeciągania tasków do innych grup
+    setActiveId(null);
+  }
 
   // Dodanie przeciągania do innego workspace
   // Zapisywanie stanu w local storage
-  // Naprawa overflow tekstu, jak się doda kilka grup
+  // Deploy na vercel
+
+  const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
+  const organizedTasks = useSelector(transformDataSelector);
+  const collisionDetectionStrategy = UseCustomDetection(organizedTasks, activeId);
 
   return (
     <>
       <div className={styles.grid}>
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={collisionDetectionStrategy}
+          onDragEnd={handleDragEnd}
+          onDragStart={({ active }) => {
+            setActiveId(active.id);
+          }}
+        >
           <SortableContext items={taskGroups} strategy={horizontalListSortingStrategy}>
             {taskGroups.map((taskGroup) => (
               <TaskGroup
@@ -81,9 +138,11 @@ const Kanban = ({ activeWorkspace }: { activeWorkspace: string }) => {
                 workspaceId={activeWorkspace}
                 taskGroupId={taskGroup.id}
                 taskGroup={taskGroup}
+                activeId={activeId}
               />
             ))}
           </SortableContext>
+          {createPortal(<DragOverlay>{activeId ? <div>123</div> : null}</DragOverlay>, document.body)}
         </DndContext>
         <AddGroup activeWorkspace={activeWorkspace} />
       </div>

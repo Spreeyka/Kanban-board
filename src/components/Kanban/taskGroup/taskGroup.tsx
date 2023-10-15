@@ -9,8 +9,6 @@ import {
   countDoneTasksAndSubtasks,
   deleteTaskGroup,
   editTaskGroupName,
-  getAllTasksInWorkspace,
-  reorderTasks,
   selectTasksList,
 } from "../../../store/slices";
 import { TaskGroup as TaskGroupType } from "../../../store/slices/types";
@@ -18,31 +16,21 @@ import { AddListButton } from "../../KanbanBoard/components/AddListButton";
 import { EditConfirmButton } from "./components/editConfirmButton";
 import styles from "./styles.module.scss";
 import { Task } from "./task/task";
+import { UniqueIdentifier } from "@dnd-kit/core";
 
-import {
-  DndContext,
-  DragEndEvent,
-  DragOverlay,
-  KeyboardSensor,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { useSortable } from "@dnd-kit/sortable";
+import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { createPortal } from "react-dom";
-import { RootState } from "../../../store/store";
 
 const TaskGroup = ({
   workspaceId,
   taskGroupId,
   taskGroup,
+  activeId,
 }: {
   workspaceId: string;
   taskGroupId: string;
   taskGroup: TaskGroupType;
+  activeId: UniqueIdentifier | null;
 }) => {
   const dispatch = useDispatch();
   const doneTasks = useSelector(countDoneTasksAndSubtasks(workspaceId, taskGroupId));
@@ -89,47 +77,11 @@ const TaskGroup = ({
     opacity: isDragging ? 0.5 : undefined,
   };
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
-
   const taskList = useSelector(selectTasksList(workspaceId, taskGroupId));
 
-  console.log("taskList", taskList);
-
+  //   tutaj nie znajdzie takiego taska, bo on jest w innym kontenerze !
   // Można pomniejszyć task, jeśli będzie w odpowiednich koordynatach
   // Dzięki temu będzie widoczne, gdzie wyląduje
-
-  function handleDragEnd(event: DragEndEvent) {
-    console.log("event", event);
-    const { active, over } = event;
-
-    if (active.id === over?.id) return;
-
-    // tutaj nie znajdzie takiego taska, bo on jest w innym kontenerze !
-
-    // const sourceTask = allTasks.find((task) => task.id === active.id);
-    // const targetTask = allTasks.find((task) => task.id === over.id);
-
-    const oldIndex = taskList.findIndex((task) => task.id === active.id);
-    const newIndex = taskList.findIndex((task) => task.id === over?.id);
-
-    dispatch(
-      reorderTasks({
-        workspaceId,
-        taskGroupId,
-        oldIndex,
-        newIndex,
-      })
-    );
-  }
 
   return (
     <>
@@ -190,8 +142,6 @@ const TaskGroup = ({
           </div>
           <p className={styles.taskDoneDescription}>{doneTasks} tasks done</p>
         </div>
-
-        {/* <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}> */}
         <SortableContext items={taskList} strategy={verticalListSortingStrategy}>
           <ul className={styles.taskList}>
             {taskList.map((task) => (
@@ -199,14 +149,6 @@ const TaskGroup = ({
             ))}
           </ul>
         </SortableContext>
-        {createPortal(
-          <DragOverlay>
-            <div>123</div>
-          </DragOverlay>,
-          document.body
-        )}
-        {/* </DndContext> */}
-
         <div className={styles.addListButtonWrapper}>
           <AddListButton onClick={addTaskToGroup}>
             <Plus fill="#88819F" /> Add a card

@@ -20,6 +20,7 @@ const initialState: BoardState = {
           tasks: {
             [taskId]: {
               id: taskId,
+              taskGroupId: taskGroupId,
               name: "Create a video for Acme",
               done: true,
               depth: 0,
@@ -27,6 +28,7 @@ const initialState: BoardState = {
             },
             [subtaskId]: {
               id: subtaskId,
+              taskGroupId: taskGroupId,
               name: "Create a video for Acme",
               done: true,
               depth: 1,
@@ -94,7 +96,14 @@ export const boardSlice = createSlice({
 
       if (taskGroup) {
         const newId = uuidv4();
-        taskGroup.tasks[newId] = { id: newId, name: taskName, done: false, depth: 0, parentId: null };
+        taskGroup.tasks[newId] = {
+          id: newId,
+          taskGroupId: taskGroupId,
+          name: taskName,
+          done: false,
+          depth: 0,
+          parentId: null,
+        };
       }
     },
     deleteTask: (state, action) => {
@@ -142,6 +151,7 @@ export const boardSlice = createSlice({
     },
     reorderTasks: (state, action) => {
       const { workspaceId, taskGroupId, oldIndex, newIndex } = action.payload;
+
       const workspace = state.workspaces[workspaceId];
       const taskGroup = workspace.taskGroups[taskGroupId];
       const tasks = taskGroup.tasks;
@@ -247,3 +257,23 @@ export const getAllTasksInWorkspace = createSelector([getWorkspaceById], (worksp
   }
   return [];
 });
+
+export const transformDataSelector = (state: RootState) => {
+  const transformedData: { [key: string]: string[] } = {};
+
+  // Loop through workspaces
+  for (const workspaceId in state.board.workspaces) {
+    const workspace = state.board.workspaces[workspaceId];
+
+    // Loop through task groups in the workspace
+    for (const taskGroupId in workspace.taskGroups) {
+      const taskGroup = workspace.taskGroups[taskGroupId];
+      const taskIds = Object.keys(taskGroup.tasks);
+
+      // Assign the array of task IDs to the corresponding group ID
+      transformedData[taskGroupId] = taskIds;
+    }
+  }
+
+  return transformedData;
+};
