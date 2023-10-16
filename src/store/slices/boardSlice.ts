@@ -1,7 +1,7 @@
-import { createSelector, createSlice } from "@reduxjs/toolkit";
-import { BoardState, RootState, Task, TaskGroup } from "./types";
-import { v4 as uuidv4 } from "uuid";
 import { arrayMove } from "@dnd-kit/sortable";
+import { createSelector, createSlice } from "@reduxjs/toolkit";
+import { v4 as uuidv4 } from "uuid";
+import { BoardState, RootState, Task, TaskGroup } from "./types";
 
 const workspaceId = uuidv4();
 const taskGroupId = uuidv4();
@@ -152,6 +152,8 @@ export const boardSlice = createSlice({
     reorderTasks: (state, action) => {
       const { workspaceId, taskGroupId, oldIndex, newIndex } = action.payload;
 
+      console.log("action.payload", action.payload);
+
       const workspace = state.workspaces[workspaceId];
       const taskGroup = workspace.taskGroups[taskGroupId];
       const tasks = taskGroup.tasks;
@@ -176,6 +178,23 @@ export const boardSlice = createSlice({
       tasks[sourceTaskId].depth = 0;
       tasks[sourceTaskId].parentId = targetTaskId;
     },
+    moveTask: (state, action) => {
+      const { workspaceId, sourceGroupId, destinationGroupId, taskId } = action.payload;
+
+      const sourceGroup = state.workspaces[workspaceId].taskGroups[sourceGroupId];
+      const destinationGroup = state.workspaces[workspaceId].taskGroups[destinationGroupId];
+
+      if (sourceGroup && destinationGroup) {
+        const taskToMove = sourceGroup.tasks[taskId];
+
+        if (taskToMove) {
+          taskToMove.taskGroupId = destinationGroupId;
+          destinationGroup.tasks[taskId] = { ...taskToMove };
+
+          delete sourceGroup.tasks[taskId];
+        }
+      }
+    },
   },
 });
 
@@ -193,6 +212,7 @@ export const {
   reorderTaskGroups,
   reorderTasks,
   changeSubtaskParent,
+  moveTask,
 } = boardSlice.actions;
 
 export const selectWorkspaces = (state: RootState) => state.board.workspaces;

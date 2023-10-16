@@ -327,6 +327,7 @@ export function MultipleContainers({
             if (overId in items) {
               newIndex = overItems.length + 1;
             } else {
+              // liczenie, czy wstawić powyżej, czy poniżej
               const isBelowOverItem =
                 over &&
                 active.rect.current.translated &&

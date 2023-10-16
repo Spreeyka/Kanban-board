@@ -16,7 +16,6 @@ import { AddListButton } from "../../KanbanBoard/components/AddListButton";
 import { EditConfirmButton } from "./components/editConfirmButton";
 import styles from "./styles.module.scss";
 import { Task } from "./task/task";
-import { UniqueIdentifier } from "@dnd-kit/core";
 
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -25,12 +24,10 @@ const TaskGroup = ({
   workspaceId,
   taskGroupId,
   taskGroup,
-  activeId,
 }: {
   workspaceId: string;
   taskGroupId: string;
   taskGroup: TaskGroupType;
-  activeId: UniqueIdentifier | null;
 }) => {
   const dispatch = useDispatch();
   const doneTasks = useSelector(countDoneTasksAndSubtasks(workspaceId, taskGroupId));
@@ -78,10 +75,6 @@ const TaskGroup = ({
   };
 
   const taskList = useSelector(selectTasksList(workspaceId, taskGroupId));
-
-  //   tutaj nie znajdzie takiego taska, bo on jest w innym kontenerze !
-  // Można pomniejszyć task, jeśli będzie w odpowiednich koordynatach
-  // Dzięki temu będzie widoczne, gdzie wyląduje
 
   return (
     <>
@@ -149,6 +142,7 @@ const TaskGroup = ({
             ))}
           </ul>
         </SortableContext>
+
         <div className={styles.addListButtonWrapper}>
           <AddListButton onClick={addTaskToGroup}>
             <Plus fill="#88819F" /> Add a card
