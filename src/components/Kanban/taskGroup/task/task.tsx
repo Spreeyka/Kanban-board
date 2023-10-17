@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import IconButton from "@mui/material/IconButton";
 import { useDispatch, useSelector } from "react-redux";
 import { useSortable } from "@dnd-kit/sortable";
@@ -12,7 +12,14 @@ import { EditConfirmButton } from "../components/editConfirmButton";
 import { Task as TaskType } from "../../../../store/slices/types";
 import styles from "./styles.module.scss";
 
-const Task = ({ task, workspaceId, taskGroupId }: { task: TaskType; workspaceId: string; taskGroupId: string }) => {
+interface TaskProps {
+  task: TaskType;
+  workspaceId: string;
+  taskGroupId: string;
+  setIsTaskDragging: (isDragging: boolean) => void;
+}
+
+const Task: React.FC<TaskProps> = ({ task, workspaceId, taskGroupId, setIsTaskDragging }) => {
   const dispatch = useDispatch();
   const taskId = task.id;
   const [text, setText] = useState(task.name);
@@ -54,6 +61,10 @@ const Task = ({ task, workspaceId, taskGroupId }: { task: TaskType; workspaceId:
     opacity: isDragging ? 0.5 : undefined,
     paddingLeft: task.depth > 0 ? "20px" : 0,
   };
+
+  useEffect(() => {
+    setIsTaskDragging(isDragging);
+  }, [isDragging, setIsTaskDragging]);
 
   return (
     <li className={styles.flexSpaced} ref={setNodeRef} style={style} {...attributes} {...listeners}>

@@ -1,5 +1,8 @@
 import { store } from "../store";
 
+export type TransformedData = {
+  [taskGroupId: string]: string[];
+};
 export interface Task {
   id: string;
   taskGroupId: string;
@@ -7,7 +10,6 @@ export interface Task {
   done: boolean;
   depth: number;
   parentId: string | null;
-  // subtasks: Record<string, Subtask>;
 }
 
 export type TaskGroup = {

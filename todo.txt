@@ -7,22 +7,15 @@ Display a task completion counter within each group.
 Create, update, and delete individual tasks within task groups.
 Display multiple workspaces with names and task groups.
 Create, update, and delete workspaces.
-
+Move tasks between groups in the same workspace via drag-and-drop.
 
 TODO:
 
-Move tasks between groups in the same workspace via drag-and-drop.
-
-
-
-
-
-Add subtasks to tasks, including creating, updating, and deleting them, with checkboxes for completion (bo to małe taski).
+Workspace flexibility: allow moving tasks or groups between workspaces. (To na drag można)
+Deployment: deploy the project on a server.
 State preservation: retain data and state on page refresh.
 
 
+Not done:
 
-Bonus
-
-Workspace flexibility: allow moving tasks or groups between workspaces. (To na drag można)
-Deployment: deploy the project on a server.
+Add subtasks to tasks, including creating, updating, and deleting them, with checkboxes for completion (bo to małe taski).

@@ -41,7 +41,7 @@ export const WorkspacesSidebar = ({
       <div className={styles.workspacesHeader}>
         {Object.values(workspaces).map((workspace: Workspace) => (
           <WorkspaceButton
-            key={workspace.name}
+            key={workspace.id}
             workspaceName={workspace.name}
             workspaceId={workspace.id}
             setWorkspacePlaceholder={setWorkspacePlaceholder}

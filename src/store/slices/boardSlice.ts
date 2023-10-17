@@ -1,7 +1,7 @@
 import { arrayMove } from "@dnd-kit/sortable";
 import { createSelector, createSlice } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
-import { BoardState, RootState, Task, TaskGroup } from "./types";
+import { BoardState, RootState, Task, TaskGroup, TransformedData } from "./types";
 
 const workspaceId = uuidv4();
 const taskGroupId = uuidv4();
@@ -152,8 +152,6 @@ export const boardSlice = createSlice({
     reorderTasks: (state, action) => {
       const { workspaceId, taskGroupId, oldIndex, newIndex } = action.payload;
 
-      console.log("action.payload", action.payload);
-
       const workspace = state.workspaces[workspaceId];
       const taskGroup = workspace.taskGroups[taskGroupId];
       const tasks = taskGroup.tasks;
@@ -278,22 +276,19 @@ export const getAllTasksInWorkspace = createSelector([getWorkspaceById], (worksp
   return [];
 });
 
-export const transformDataSelector = (state: RootState) => {
-  const transformedData: { [key: string]: string[] } = {};
+export const transformDataSelector = createSelector([selectWorkspaces], (workspaces) => {
+  const transformedData: TransformedData = {};
 
-  // Loop through workspaces
-  for (const workspaceId in state.board.workspaces) {
-    const workspace = state.board.workspaces[workspaceId];
+  for (const workspaceId in workspaces) {
+    const workspace = workspaces[workspaceId];
 
-    // Loop through task groups in the workspace
     for (const taskGroupId in workspace.taskGroups) {
       const taskGroup = workspace.taskGroups[taskGroupId];
       const taskIds = Object.keys(taskGroup.tasks);
 
-      // Assign the array of task IDs to the corresponding group ID
       transformedData[taskGroupId] = taskIds;
     }
   }
 
   return transformedData;
-};
+});

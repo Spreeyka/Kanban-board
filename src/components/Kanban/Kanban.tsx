@@ -36,8 +36,9 @@ import { TaskMock } from "./taskGroup/task/taskOverlay";
 import { coordinateGetter } from "./utils/coordinateGetter";
 
 const Kanban = ({ activeWorkspace }: { activeWorkspace: string }) => {
-  const taskGroups = useSelector(selectTaskGroupsList(activeWorkspace));
   const dispatch = useDispatch();
+  const taskGroups = useSelector(selectTaskGroupsList(activeWorkspace));
+  const allTasks = useSelector((state: RootState) => getAllTasksInWorkspace(state, activeWorkspace));
 
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
@@ -46,8 +47,6 @@ const Kanban = ({ activeWorkspace }: { activeWorkspace: string }) => {
       coordinateGetter,
     })
   );
-
-  const allTasks = useSelector((state: RootState) => getAllTasksInWorkspace(state, activeWorkspace));
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -67,6 +66,9 @@ const Kanban = ({ activeWorkspace }: { activeWorkspace: string }) => {
     const targetTask = allTasks.find((task) => task.id === over?.id);
 
     const moveInSingleGroup = sourceTask?.taskGroupId === targetTask?.taskGroupId;
+
+    console.log("over", over.id);
+    console.log("active", active.id);
 
     if (tasksMoving) {
       // Reorder tasks
@@ -126,9 +128,8 @@ const Kanban = ({ activeWorkspace }: { activeWorkspace: string }) => {
     setActiveId(null);
   }
 
-  // Zapisywanie stanu w local storage
-  // Przydałby się jakiś indykator, że jest przeciągane do grupy
   // Dodanie przeciągania do innego workspace
+  // Naprawić to, że jak klikamy w input, żeby zaznaczyć, to przeciąga
   // Deploy na vercel
 
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
@@ -146,6 +147,8 @@ const Kanban = ({ activeWorkspace }: { activeWorkspace: string }) => {
       },
     }),
   };
+
+  const [isTaskDragging, setIsTaskDragging] = useState(false);
 
   return (
     <>
@@ -165,11 +168,13 @@ const Kanban = ({ activeWorkspace }: { activeWorkspace: string }) => {
                 workspaceId={activeWorkspace}
                 taskGroupId={taskGroup.id}
                 taskGroup={taskGroup}
+                isTaskDragging={isTaskDragging}
+                setIsTaskDragging={setIsTaskDragging}
               />
             ))}
           </SortableContext>
           {createPortal(
-            <DragOverlay dropAnimation={dropAnimation}>
+            <DragOverlay dropAnimation={dropAnimation} style={{ pointerEvents: "none" }}>
               {taskMoving ? (
                 <TaskMock task={taskMoving} workspaceId={activeWorkspace} taskGroupId={taskMoving.taskGroupId} />
               ) : null}

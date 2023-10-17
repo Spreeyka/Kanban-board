@@ -20,17 +20,24 @@ import { Task } from "./task/task";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 
-const TaskGroup = ({
-  workspaceId,
-  taskGroupId,
-  taskGroup,
-}: {
+interface TaskGroupProps {
   workspaceId: string;
   taskGroupId: string;
   taskGroup: TaskGroupType;
+  isTaskDragging: boolean;
+  setIsTaskDragging: (isDragging: boolean) => void;
+}
+
+const TaskGroup: React.FC<TaskGroupProps> = ({
+  workspaceId,
+  taskGroupId,
+  taskGroup,
+  isTaskDragging,
+  setIsTaskDragging,
 }) => {
   const dispatch = useDispatch();
   const doneTasks = useSelector(countDoneTasksAndSubtasks(workspaceId, taskGroupId));
+  const taskList = useSelector(selectTasksList(workspaceId, taskGroupId));
 
   const [text, setText] = useState(taskGroup.name);
   const [isEditing, setIsEditing] = useState(false);
@@ -72,9 +79,8 @@ const TaskGroup = ({
     transition,
     transform: CSS.Translate.toString(transform),
     opacity: isDragging ? 0.5 : undefined,
+    backgroundColor: isTaskDragging && isHovered ? "rgba(144, 238, 144, 0.7)" : "unset",
   };
-
-  const taskList = useSelector(selectTasksList(workspaceId, taskGroupId));
 
   return (
     <>
@@ -138,7 +144,13 @@ const TaskGroup = ({
         <SortableContext items={taskList} strategy={verticalListSortingStrategy}>
           <ul className={styles.taskList}>
             {taskList.map((task) => (
-              <Task key={task.id} task={task} workspaceId={workspaceId} taskGroupId={taskGroupId} />
+              <Task
+                key={task.id}
+                task={task}
+                workspaceId={workspaceId}
+                taskGroupId={taskGroupId}
+                setIsTaskDragging={setIsTaskDragging}
+              />
             ))}
           </ul>
         </SortableContext>
