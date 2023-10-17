@@ -8,6 +8,7 @@ import { WorkspaceIcon } from "../../../assets/icons/Workspace";
 import { deleteWorkspace, editWorkspace, selectWorkspaces } from "../../../store/slices";
 import styles from "./styles.module.scss";
 import { EditConfirmButton } from "../../Kanban/taskGroup/components/editConfirmButton";
+import { useDroppable } from "@dnd-kit/core";
 
 interface WorkspaceButtonProps {
   workspaceName: string;
@@ -62,16 +63,33 @@ const WorkspaceButton: React.FC<WorkspaceButtonProps> = ({
     setText(e.target.value);
   };
 
+  const { isOver, setNodeRef } = useDroppable({
+    id: workspaceId,
+    data: { isWorkspaceDraggable: true },
+  });
+  const getBackgroundColor = () => {
+    if (isOver) {
+      return "rgba(144, 238, 144, 0.7)";
+    } else if (activeWorkspace === workspaceId) {
+      return "#f4f7fe";
+    } else {
+      return "transparent";
+    }
+  };
+
+  const backgroundColor = getBackgroundColor();
+
   return (
     <>
       <button
         className={styles.button}
-        style={{ backgroundColor: activeWorkspace === workspaceId ? "#f4f7fe" : "transparent" }}
+        style={{ backgroundColor }}
         onClick={() => setActiveWorkspace(workspaceId)}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
+        ref={setNodeRef}
       >
         <div style={{ display: "flex" }}>
           <WorkspaceIcon />

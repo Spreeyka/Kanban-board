@@ -2,6 +2,7 @@ import {
   CollisionDetection,
   UniqueIdentifier,
   closestCenter,
+  closestCorners,
   getFirstCollision,
   pointerWithin,
   rectIntersection,
@@ -23,10 +24,14 @@ const UseCustomDetection = (organizedTasks: { [key: string]: string[] }, activeI
 
   const collisionDetectionStrategy: CollisionDetection = useCallback(
     (args) => {
+      // Condition for groups
       if (activeId && activeId in organizedTasks) {
-        return closestCenter({
+        const groupsAndWorkspaces = args.droppableContainers.filter(
+          (container) => container.id in organizedTasks || container.data.current?.isWorkspaceDraggable === true
+        );
+        return closestCorners({
           ...args,
-          droppableContainers: args.droppableContainers.filter((container) => container.id in organizedTasks),
+          droppableContainers: groupsAndWorkspaces,
         });
       }
 
@@ -69,6 +74,7 @@ const UseCustomDetection = (organizedTasks: { [key: string]: string[] }, activeI
       }
 
       // If no droppable is matched, return the last match
+      console.log("3", 3);
       return lastOverId.current ? [{ id: lastOverId.current }] : [];
     },
     [activeId, organizedTasks]

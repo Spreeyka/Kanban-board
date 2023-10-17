@@ -193,6 +193,43 @@ export const boardSlice = createSlice({
         }
       }
     },
+    moveTaskGroupToNewWorkspace: (state, action) => {
+      const { sourceWorkspaceId, targetWorkspaceId, taskGroupId } = action.payload;
+
+      console.log("action.payload", action.payload);
+    },
+    moveTaskToNewWorkspace: (state, action) => {
+      const { task, sourceWorkspaceId, targetWorkspaceId } = action.payload;
+
+      if (sourceWorkspaceId === targetWorkspaceId) return;
+
+      const sourceWorkspace = state.workspaces[sourceWorkspaceId];
+      const targetWorkspace = state.workspaces[targetWorkspaceId];
+
+      const newGroupName = `${sourceWorkspace.name} tasks`;
+      const newGroupId = uuidv4();
+
+      const existingGroup = Object.values(targetWorkspace.taskGroups).find((group) => group.name === newGroupName);
+
+      if (existingGroup) {
+        existingGroup.tasks[task.id] = { ...task, taskGroupId: existingGroup.id };
+      } else {
+        targetWorkspace.taskGroups[newGroupId] = {
+          id: newGroupId,
+          name: newGroupName,
+          tasks: {
+            [task.id]: { ...task, taskGroupId: newGroupId },
+          },
+        };
+      }
+
+      delete sourceWorkspace.taskGroups[task.taskGroupId].tasks[task.id];
+
+      const groupIsEmptyAfterMove = Object.keys(sourceWorkspace.taskGroups[task.taskGroupId].tasks).length === 0;
+      if (groupIsEmptyAfterMove) {
+        delete sourceWorkspace.taskGroups[task.taskGroupId];
+      }
+    },
   },
 });
 
@@ -211,6 +248,8 @@ export const {
   reorderTasks,
   changeSubtaskParent,
   moveTask,
+  moveTaskToNewWorkspace,
+  moveTaskGroupToNewWorkspace,
 } = boardSlice.actions;
 
 export const selectWorkspaces = (state: RootState) => state.board.workspaces;
