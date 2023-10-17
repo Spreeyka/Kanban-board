@@ -80,10 +80,11 @@ const Task: React.FC<TaskProps> = ({ task, workspaceId, taskGroupId, setIsTaskDr
           <input
             value={text}
             //trick to make input grow
+            className={styles.customInput}
             style={{ width: `${text.length}ch` }}
+            onFocus={(e) => e.target.select()}
             onChange={handleChange}
             onBlur={handleSaveClick}
-            className={styles.customInput}
             maxLength={38}
             spellCheck="false"
             ref={inputRef}

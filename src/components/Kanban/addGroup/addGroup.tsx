@@ -1,6 +1,6 @@
 import { useDispatch } from "react-redux";
 import { Plus } from "../../../assets/icons/Plus";
-import { AddListButton } from "../../KanbanBoard/components/AddListButton";
+import { AddListButton } from "../taskGroup/components/AddListButton";
 import styles from "./styles.module.scss";
 import { addTaskGroup } from "../../../store/slices";
 

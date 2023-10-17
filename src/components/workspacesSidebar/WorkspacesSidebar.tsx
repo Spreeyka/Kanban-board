@@ -22,8 +22,6 @@ export const WorkspacesSidebar = ({
   const [workspacePlaceholder, setWorkspacePlaceholder] = useState(false);
 
   const dispatch = useDispatch();
-  const state = useSelector((state) => state);
-  console.log(state);
 
   const showPlaceholder = () => {
     setWorkspacePlaceholder((prev) => !prev);

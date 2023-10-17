@@ -11,12 +11,6 @@ import { useState } from "react";
 const Kanban = ({ activeWorkspace }: { activeWorkspace: string }) => {
   const taskGroups = useSelector(selectTaskGroupsList(activeWorkspace));
 
-  // Dodanie przeciągania do innego workspace:
-  //    reducer to przeciągania grupy (wywalamy grupę z jednego workspace i wkładamy do drugiego)
-
-  // Naprawić to, że jak klikamy w input, żeby zaznaczyć, to przeciąga
-  // Deploy na vercel
-
   const [isTaskDragging, setIsTaskDragging] = useState(false);
 
   return (

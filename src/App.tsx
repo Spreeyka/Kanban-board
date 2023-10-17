@@ -132,7 +132,6 @@ export const App = () => {
     if (groupsMoving) {
       //move group to new workspace
       if (targetWorkspaceId) {
-        console.log("Przenosimy grupę do nowego workspace");
         const sourceGroup = taskGroups.find((taskGroup) => taskGroup.id === active.id);
 
         dispatch(

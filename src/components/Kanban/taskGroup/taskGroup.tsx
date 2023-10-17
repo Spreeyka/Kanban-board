@@ -12,7 +12,7 @@ import {
   selectTasksList,
 } from "../../../store/slices";
 import { TaskGroup as TaskGroupType } from "../../../store/slices/types";
-import { AddListButton } from "../../KanbanBoard/components/AddListButton";
+import { AddListButton } from "./components/AddListButton";
 import { EditConfirmButton } from "./components/editConfirmButton";
 import styles from "./styles.module.scss";
 import { Task } from "./task/task";
@@ -103,6 +103,7 @@ const TaskGroup: React.FC<TaskGroupProps> = ({
                 value={text}
                 //trick to make input grow
                 style={{ width: `${text.length}ch` }}
+                onFocus={(e) => e.target.select()}
                 onChange={handleChange}
                 onBlur={handleSaveClick}
                 className={styles.customInput}

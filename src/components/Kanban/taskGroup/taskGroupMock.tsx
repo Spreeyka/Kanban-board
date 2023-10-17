@@ -3,7 +3,7 @@ import { DeleteIcon } from "../../../assets/icons/Delete";
 import { EditIcon } from "../../../assets/icons/Edit";
 import { Plus } from "../../../assets/icons/Plus";
 import { TaskGroup as TaskGroupType, Task as taskType } from "../../../store/slices/types";
-import { AddListButton } from "../../KanbanBoard/components/AddListButton";
+import { AddListButton } from "./components/AddListButton";
 import styles from "./styles.module.scss";
 
 import { TaskMock } from "./task/taskMock";

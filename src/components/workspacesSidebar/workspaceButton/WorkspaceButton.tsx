@@ -99,6 +99,7 @@ const WorkspaceButton: React.FC<WorkspaceButtonProps> = ({
           <div style={{ display: "flex", gap: "6px" }}>
             <input
               value={text}
+              onFocus={(e) => e.target.select()}
               onChange={handleChange}
               onBlur={handleSaveClick}
               className={styles.customInput}

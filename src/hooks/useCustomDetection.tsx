@@ -74,7 +74,6 @@ const UseCustomDetection = (organizedTasks: { [key: string]: string[] }, activeI
       }
 
       // If no droppable is matched, return the last match
-      console.log("3", 3);
       return lastOverId.current ? [{ id: lastOverId.current }] : [];
     },
     [activeId, organizedTasks]
