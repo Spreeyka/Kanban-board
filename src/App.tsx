@@ -68,7 +68,6 @@ export const App = () => {
     const sourceTaskIndex = allTasks.findIndex((task) => task.id === active.id);
 
     const sourceGroupIndex = taskGroups.findIndex((taskGroup) => taskGroup.id === active.id);
-    const targetGroupIndex = taskGroups.findIndex((taskGroup) => taskGroup.id === over?.id);
 
     const groupsMoving = sourceGroupIndex !== -1;
     const tasksMoving = sourceTaskIndex !== -1;
@@ -77,12 +76,7 @@ export const App = () => {
     const targetTask = allTasks.find((task) => task.id === over?.id);
     const targetWorkspaceId = Object.keys(workspaces).find((workspace) => workspace === over?.id);
 
-    console.log("targetWorkspaceId", targetWorkspaceId);
-
     const moveInSingleGroup = sourceTask?.taskGroupId === targetTask?.taskGroupId;
-
-    console.log("over", over);
-    console.log("active", active);
 
     if (tasksMoving) {
       if (targetWorkspaceId) {

@@ -196,7 +196,12 @@ export const boardSlice = createSlice({
     moveTaskGroupToNewWorkspace: (state, action) => {
       const { sourceWorkspaceId, targetWorkspaceId, taskGroupId } = action.payload;
 
-      console.log("action.payload", action.payload);
+      if (sourceWorkspaceId === targetWorkspaceId) return;
+
+      const movedGroup = state.workspaces[sourceWorkspaceId].taskGroups[taskGroupId];
+
+      state.workspaces[targetWorkspaceId].taskGroups[taskGroupId] = { ...movedGroup };
+      delete state.workspaces[sourceWorkspaceId].taskGroups[taskGroupId];
     },
     moveTaskToNewWorkspace: (state, action) => {
       const { task, sourceWorkspaceId, targetWorkspaceId } = action.payload;
