@@ -54,7 +54,7 @@ const UseCustomDetection = (organizedTasks: { [key: string]: string[] }, activeI
             overId = closestCenter({
               ...args,
               droppableContainers: args.droppableContainers.filter(
-                (container) => container.id !== overId && containerItems.includes(container.id)
+                (container) => container.id !== overId && containerItems.includes(String(container.id))
               ),
             })[0]?.id;
           }
