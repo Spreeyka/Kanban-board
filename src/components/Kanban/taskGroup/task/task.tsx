@@ -53,6 +53,16 @@ const Task: React.FC<TaskProps> = ({ task, workspaceId, taskGroupId, setIsTaskDr
     }, 0);
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === " ") {
+      e.stopPropagation();
+    }
+    if (e.key === "Enter") {
+      e.stopPropagation();
+      inputRef.current?.blur();
+    }
+  };
+
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: taskId });
 
   const style = {
@@ -70,7 +80,6 @@ const Task: React.FC<TaskProps> = ({ task, workspaceId, taskGroupId, setIsTaskDr
     <li className={styles.flexSpaced} ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <div
         className={styles.gridItemHeader}
-        tabIndex={0}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         onMouseEnter={() => setIsHovered(true)}
@@ -88,6 +97,7 @@ const Task: React.FC<TaskProps> = ({ task, workspaceId, taskGroupId, setIsTaskDr
             maxLength={38}
             spellCheck="false"
             ref={inputRef}
+            onKeyDown={handleKeyDown}
           />
         ) : (
           <>
@@ -104,13 +114,19 @@ const Task: React.FC<TaskProps> = ({ task, workspaceId, taskGroupId, setIsTaskDr
               opacity: (isFocused || isHovered) && !isEditing ? 1 : 0,
             }}
           >
-            <IconButton aria-label="edit" sx={{ border: 0, padding: "6px", borderRadius: 0 }} onClick={handleEditClick}>
+            <IconButton
+              aria-label="edit"
+              sx={{ border: 0, padding: "6px", borderRadius: 0 }}
+              onClick={handleEditClick}
+              onKeyDown={handleKeyDown}
+            >
               <EditIcon />
             </IconButton>
             <IconButton
               aria-label="delete"
               sx={{ border: 0, padding: "6px", borderRadius: 0 }}
               onClick={handleRemoveTask}
+              onKeyDown={handleKeyDown}
             >
               <DeleteIcon />
             </IconButton>
@@ -120,6 +136,7 @@ const Task: React.FC<TaskProps> = ({ task, workspaceId, taskGroupId, setIsTaskDr
           <CustomToggleButton
             style={{ marginLeft: -6 }}
             selected={isTaskDone}
+            onKeyDown={handleKeyDown}
             onChange={() => {
               dispatch(
                 toggleTaskState({

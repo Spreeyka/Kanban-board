@@ -82,6 +82,16 @@ const TaskGroup: React.FC<TaskGroupProps> = ({
     backgroundColor: isTaskDragging && isHovered ? "rgba(144, 238, 144, 0.7)" : "unset",
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === " ") {
+      e.stopPropagation();
+    }
+    if (e.key === "Enter") {
+      e.stopPropagation();
+      inputRef.current?.blur();
+    }
+  };
+
   return (
     <>
       <div
@@ -110,6 +120,7 @@ const TaskGroup: React.FC<TaskGroupProps> = ({
                 maxLength={38}
                 spellCheck="false"
                 ref={inputRef}
+                onKeyDown={handleKeyDown}
               />
             ) : (
               <p className={styles.taskGroupName}>{taskGroup.name}</p>
@@ -127,6 +138,7 @@ const TaskGroup: React.FC<TaskGroupProps> = ({
                   aria-label="edit"
                   sx={{ border: 0, padding: "6px", borderRadius: 0 }}
                   onClick={handleEditClick}
+                  onKeyDown={handleKeyDown}
                 >
                   <EditIcon />
                 </IconButton>
@@ -134,6 +146,7 @@ const TaskGroup: React.FC<TaskGroupProps> = ({
                   aria-label="delete"
                   sx={{ border: 0, padding: "6px", borderRadius: 0 }}
                   onClick={handleRemoveTask}
+                  onKeyDown={handleKeyDown}
                 >
                   <DeleteIcon />
                 </IconButton>
@@ -157,7 +170,7 @@ const TaskGroup: React.FC<TaskGroupProps> = ({
         </SortableContext>
 
         <div className={styles.addListButtonWrapper}>
-          <AddListButton onClick={addTaskToGroup}>
+          <AddListButton onClick={addTaskToGroup} handleKeyDown={handleKeyDown}>
             <Plus fill="#88819F" /> Add a card
           </AddListButton>
         </div>
